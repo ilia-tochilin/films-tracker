@@ -5,8 +5,8 @@ import pandas as pd
 import os
 
 
-api_key = ""
-playlist_id = ""
+api_key = "AIzaSyBaTt4IgcqGPsrNgPusyTvIlcilkeDofHw"
+playlist_id = "PLtLZvYaxO-ZQsZiJkfShBzJSaWCJH6U2c"
 file_name = "films_list"
 
 url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails&maxResults=35&playlistId={}&key={}".format(playlist_id, api_key)
@@ -17,7 +17,7 @@ available_films = []
 matched_films = []
 
 try:
-    df = pd.read_csv ("data.csv", sep="@", encoding="utf-8", usecols=['film', 'link'])
+    df = pd.read_csv ("data.csv".format(os.getcwd()), sep="@", encoding="utf-8", usecols=['film', 'link'])
 except pd.errors.EmptyDataError:
     pass
 
@@ -36,6 +36,9 @@ class Film:
 
     def get_link (self):
         return self.link
+    
+    def __str__(self):
+        return self.title + " " + self.year + " " + self.link 
 
 
 ''' Gets Film List From Youtube Playlist '''
@@ -88,7 +91,10 @@ def get_available_films(amount_of_pages=3):
 
     for j in range (1, amount_of_pages + 1):
 
-        r = requests.get("https://rezka.ag/films/page/{}".format(j)).text
+
+        r = requests.get("https://rezka.ag/films/best/2022/page/{}/".format(j), headers = { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36' 
+        }).text
 
         soup = bs.BeautifulSoup(r, 'html.parser')
 
@@ -101,7 +107,8 @@ def get_available_films(amount_of_pages=3):
                 link= i.find("a")["href"]
                 )
             )
-        
+
+
         os.system("cls")
         loader = '[' + "==" * j + "  " * (amount_of_pages - j) + ']' + '\n\n'
         print ("SEARCHING: \n")
@@ -184,9 +191,13 @@ def trim_local_data():
 
 if __name__=="__main__":
     os.system("cls")
+    depth = int(input("Enter depth: "))
     get_film_list()
     trim_local_data()
     find_in_data()
-    get_available_films(10)
+
+    get_available_films(depth)
+
+
     find_matches()
     input("\nPress Enter to finish...")
